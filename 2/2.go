@@ -169,16 +169,82 @@ func countB(left string, right string) int {
 	return count
 }
 
-func main() {
-	left, right := getLists()
-	counta, countb := 0, 0
+func calcB(left string, right string) int {
+	fmt.Println("CALC", left, right)
+	N := len(left)
+	result := 0
 
-	for i := range len(left) {
-		fmt.Println(left[i], "-", right[i], len(left[i]), len(right[i]))
-		counta += countA(left[i], right[i])
-		countb += countB(left[i], right[i])
-
+	sizesToConsider := []int{5, 4, 3}
+	if N == 2 || N == 3 || N == 5 || N == 7 || N == 11 {
+		sizesToConsider = []int{1}
+	} else if N%2 == 0 && N != 8 && N != 12 {
+		sizesToConsider = []int{5, 4, 3, 2}
 	}
-	fmt.Println("Part A", counta)
-	fmt.Println("Part B", countb)
+
+	for _, size := range sizesToConsider {
+		if N%size == 0 && N > size {
+			start := toN(left[:size])
+			if !canStart(start, left, size) {
+				start += 1
+			}
+			stop := toN(right[:size])
+			if !canStop(stop, right, size) {
+				stop -= 1
+			}
+
+			if start <= stop {
+				fmt.Println("HIT", start, stop)
+				toAdd := (stop + start) * (stop - start + 1) / 2
+				result += toAdd
+				for i := range N/size - 1 {
+					result += toAdd * pow10(size*(i+1))
+				}
+			}
+		}
+	}
+	fmt.Println("RESULT", result)
+
+	return result
+}
+
+func partB2() int {
+	result := 0
+	input, _ := io.ReadAll(os.Stdin)
+
+	for line := range strings.SplitSeq(string(input), ",") {
+		limits := strings.Split(strings.TrimSpace(line), "-")
+		left := limits[0]
+		right := limits[1]
+		fmt.Println("|", left, "---", right, "|")
+		if len(left) == len(right) {
+			if len(left) > 1 {
+				result += calcB(left, right)
+			}
+		} else {
+			if len(left) > 1 {
+				result += calcB(left, strings.Repeat("9", len(left)))
+			}
+			if len(right) > 1 {
+				result += calcB("1"+strings.Repeat("0", len(right)-1), right)
+			}
+		}
+		fmt.Println()
+	}
+
+	return result
+}
+
+func main() {
+	// left, right := getLists()
+	// counta, countb := 0, 0
+
+	// for i := range len(left) {
+	// 	fmt.Println(left[i], "-", right[i], len(left[i]), len(right[i]))
+	// 	counta += countA(left[i], right[i])
+	// 	countb += countB(left[i], right[i])
+	//
+	// }
+	// fmt.Println("Part A", counta)
+	// fmt.Println("Part B", countb)
+	fmt.Println("Part B2", partB2())
 }
